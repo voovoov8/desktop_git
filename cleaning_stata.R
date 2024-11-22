@@ -172,3 +172,22 @@ happiness_oecd_with_code <- happiness_oecd %>%
 View(happiness_oecd_with_code)
 write.csv(happiness_oecd_with_code, "happiness_oecd_with_code.csv", row.names = FALSE)
 
+
+
+
+### test ###
+## 코드 바탕으로 cpi_w 붙여보기 
+str(oecd_cpi)
+str(happiness_oecd_with_code)
+
+# Merge the datasets
+happiness_oecd_with_cpi <- happiness_oecd_with_code %>%
+  left_join(
+    select(oecd_cpi, area, year, cpi_w),
+    by = c("area", "year")
+  )
+
+# Check the result
+View(happiness_oecd_with_cpi)
+
+### test 이상없음 ###
