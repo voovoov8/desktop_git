@@ -170,7 +170,8 @@ happiness_oecd_with_code <- happiness_oecd %>%
 
 # Check the result
 View(happiness_oecd_with_code)
-write.csv(happiness_oecd_with_code, "happiness_oecd_with_code.csv", row.names = FALSE)
+# write.csv(happiness_oecd_with_code, "happiness_oecd_with_code.csv", row.names = FALSE)
+happiness_oecd_with_code <- read_csv("happiness_oecd_with_code.csv")
 
 
 
@@ -195,6 +196,7 @@ View(happiness_oecd_with_cpi)
 library(readr)
 library(tidyr)
 library(dplyr)
+##############################################################
 # housing data 추가
 nominal_hp <- read_csv("/Users/yunchaeho/Desktop/exer/DB_PJ_stata/Nominal_house_price_indices.csv")
 str(nominal_hp)
@@ -202,8 +204,122 @@ View(nominal_hp)
 
 nominal_hp_long <- nominal_hp %>%
   pivot_longer(
-    cols = -"Time period",  # TIME column을 제외한 모든 열을 변환
-    names_to = "country",  # 새로운 국가명 열
-    values_to = "house_price"  # 새로운 집값 열
+    cols = -`Time period`,  # Time period 컬럼을 제외한 모든 열을 변환
+    names_to = "country",   # 국가명들을 country 컬럼으로
+    values_to = "house_price"  # 값들을 house_price 컬럼으로
   ) %>%
-  rename(year = TIME)  # TIME 열의 이름을 year로 변경
+  rename(year = `Time period`)  # Time period를 year로 변경
+
+str(nominal_hp_long)
+str(happiness_oecd_with_code)
+
+
+happiness_housing <- happiness_oecd_with_code %>%
+  left_join(
+    nominal_hp_long,
+    by = c("Country name" = "country", "year" = "year")
+  )
+View(happiness_housing)
+
+##############################################################
+pti_ratio <- read_csv("/Users/yunchaeho/Desktop/exer/DB_PJ_stata/Price_to_income_ratio.csv")
+str(pti_ratio)
+
+# 1. 시계열 형식 풀기
+pti_ratio_or <- pti_ratio %>%
+  pivot_longer(
+    cols = -`Time period`,  # Time period 컬럼을 제외한 모든 열을 변환
+    names_to = "country",   # 국가명들을 country 컬럼으로
+    values_to = "pri_ratio"  # 값들을 house_price 컬럼으로
+  ) %>%
+  rename(year = `Time period`)  # Time period를 year로 변경
+
+str(pti_ratio_or)
+View(pti_ratio_or)
+
+# 2. 바탕으로 조인하기
+happiness_h_p <- happiness_housing %>%
+  left_join(
+    pti_ratio_or,
+    by = c("Country name" = "country", "year" = "year")
+  )
+View(happiness_h_p)
+
+
+##############################################################
+ptr_ratio <- read_csv("/Users/yunchaeho/Desktop/exer/DB_PJ_stata/Price_to_rent_ratio.csv")
+r_house_price <- read_csv("/Users/yunchaeho/Desktop/exer/DB_PJ_stata/Real_house_price_indices.csv")
+Rent_price <- read_csv("/Users/yunchaeho/Desktop/exer/DB_PJ_stata/Rent_price.csv")
+
+################################################################
+# ptr 추가 
+# 1. 시계열 형식 풀기
+ptr_ratio_or <- ptr_ratio %>%
+  pivot_longer(
+    cols = -`Time period`,  # Time period 컬럼을 제외한 모든 열을 변환
+    names_to = "country",   # 국가명들을 country 컬럼으로
+    values_to = "ptr_ratio"  # 값들을 house_price 컬럼으로
+  ) %>%
+  rename(year = `Time period`)  # Time period를 year로 변경
+
+str(ptr_ratio_or)
+
+# 2. 바탕으로 조인하기
+happiness_h_p_ptr <- happiness_h_p %>%
+  left_join(
+    ptr_ratio_or,
+    by = c("Country name" = "country", "year" = "year")
+  )
+View(happiness_h_p_ptr)
+
+
+################################################################
+# rhpa 추가 
+# 1. 시계열 형식 풀기
+r_house_price_added <- r_house_price %>%
+  pivot_longer(
+    cols = -`Time period`,  # Time period 컬럼을 제외한 모든 열을 변환
+    names_to = "country",   # 국가명들을 country 컬럼으로
+    values_to = "r_house_price"  # 값들을 house_price 컬럼으로
+  ) %>%
+  rename(year = `Time period`)  # Time period를 year로 변경
+
+str(r_house_price_added)
+
+# 2. 바탕으로 조인하기
+happiness_h_p_ptr_rhpa <- happiness_h_p_ptr %>%
+  left_join(
+    r_house_price_added,
+    by = c("Country name" = "country", "year" = "year")
+  )
+View(happiness_h_p_ptr_rhpa)
+
+
+####################################################################
+# Rent_price 추가 
+# 1. 시계열 형식 풀기
+Rent_price_added <- Rent_price %>%
+  pivot_longer(
+    cols = -`Time period`,  # Time period 컬럼을 제외한 모든 열을 변환
+    names_to = "country",   # 국가명들을 country 컬럼으로
+    values_to = "Rent_price"  # 값들을 house_price 컬럼으로
+  ) %>%
+  rename(year = `Time period`)  # Time period를 year로 변경
+
+str(Rent_price_added)
+
+# 2. 바탕으로 조인하기
+happiness_h_p_ptr_rhpa_rp <- happiness_h_p_ptr_rhpa %>%
+  left_join(
+    Rent_price_added,
+    by = c("Country name" = "country", "year" = "year")
+  )
+View(happiness_h_p_ptr_rhpa_rp)
+
+
+happiness_housing_add <- happiness_h_p_ptr_rhpa_rp %>%
+  rename(code = area)
+str(happiness_housing_add)
+
+# 저장 
+write.csv(happiness_housing_add, "happiness_housing_add.csv", row.names = FALSE)
