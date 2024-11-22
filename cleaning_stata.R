@@ -129,3 +129,46 @@ write.csv(happiness_oecd, "happiness_oecd_2013_2023.csv", row.names = FALSE)
 # ==============================================================================
 # 3. 데이터 추가
 # ==============================================================================
+# oecd 국가들을 아우를 수 있는 데이터들을 불러와 보는 것으로 해야겠다.
+
+
+#### oecd cpi_w
+# OECD CPI 데이터 불러오기
+oecd_cpi <- read_csv("/Users/yunchaeho/Desktop/exer/DB_PJ_stata/oecd_cpi_weghted.csv")
+
+# 데이터 확인
+str(oecd_cpi)
+View(oecd_cpi)
+# 국가 이름과 ISO 코드 매핑 생성
+country_codes <- c(
+    "Australia" = "AUS", "Austria" = "AUT", "Belgium" = "BEL", 
+    "Canada" = "CAN", "Chile" = "CHL", "Colombia" = "COL", 
+    "Costa Rica" = "CRI", "Czechia" = "CZE", "Denmark" = "DNK",
+    "Estonia" = "EST", "Finland" = "FIN", "France" = "FRA",
+    "Germany" = "DEU", "Greece" = "GRC", "Hungary" = "HUN",
+    "Iceland" = "ISL", "Ireland" = "IRL", "Israel" = "ISR",
+    "Italy" = "ITA", "Japan" = "JPN", "South Korea" = "KOR",
+    "Latvia" = "LVA", "Lithuania" = "LTU", "Luxembourg" = "LUX",
+    "Mexico" = "MEX", "Netherlands" = "NLD", "New Zealand" = "NZL",
+    "Norway" = "NOR", "Poland" = "POL", "Portugal" = "PRT",
+    "Slovakia" = "SVK", "Slovenia" = "SVN", "Spain" = "ESP",
+    "Sweden" = "SWE", "Switzerland" = "CHE", "Türkiye" = "TUR",
+    "United Kingdom" = "GBR", "United States" = "USA"
+)
+
+# oecd_countries에 ISO 코드 추가
+oecd_countries_with_code <- data.frame(
+    country_name = oecd_countries,
+    area = unname(country_codes[oecd_countries])
+)
+View(oecd_countries_with_code)
+str(happiness_oecd)
+
+# Add ISO codes to happiness_oecd
+happiness_oecd_with_code <- happiness_oecd %>%
+  mutate(area = country_codes[`Country name`])
+
+# Check the result
+View(happiness_oecd_with_code)
+write.csv(happiness_oecd_with_code, "happiness_oecd_with_code.csv", row.names = FALSE)
+
