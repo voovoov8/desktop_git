@@ -191,3 +191,19 @@ happiness_oecd_with_cpi <- happiness_oecd_with_code %>%
 View(happiness_oecd_with_cpi)
 
 ### test 이상없음 ###
+
+library(readr)
+library(tidyr)
+library(dplyr)
+# housing data 추가
+nominal_hp <- read_csv("/Users/yunchaeho/Desktop/exer/DB_PJ_stata/Nominal_house_price_indices.csv")
+str(nominal_hp)
+View(nominal_hp)
+
+nominal_hp_long <- nominal_hp %>%
+  pivot_longer(
+    cols = -"Time period",  # TIME column을 제외한 모든 열을 변환
+    names_to = "country",  # 새로운 국가명 열
+    values_to = "house_price"  # 새로운 집값 열
+  ) %>%
+  rename(year = TIME)  # TIME 열의 이름을 year로 변경
