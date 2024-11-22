@@ -12,9 +12,9 @@ View(happiness)
 
 
 # ==============================================================================
-# 
+# 1. OECD 회원국 목록으로 정리하기
+
 # ==============================================================================
-## OECD 회원국 목록으로 정리하기
 # OECD 회원국 목록
 oecd_countries <- c(
   "Australia", "Austria", "Belgium", "Canada", "Chile", "Colombia", "Costa Rica",
@@ -42,7 +42,7 @@ setdiff(oecd_countries, happiness_oecd$`Country name`)
 
 
 # ==============================================================================
-#  oecd 국가들의 시계열 데이터 상태 확인
+# 2. oecd 국가들의 시계열 데이터 상태 확인
 # ==============================================================================
 # 수정 결과 총 38 개국을 모두 알게 됨
 str(happiness_oecd)
@@ -77,3 +77,55 @@ happiness_oecd %>%
        fill = "데이터 존재") +
   coord_flip() +
   scale_y_continuous(breaks = unique(happiness_oecd$year))
+
+# 해복 사다리만 기준으로 평가한다면? (2013년 이후 기준)
+# 2013년 이후 데이터 필터링 및 연도별 국가 수 계산
+happiness_oecd %>%
+  filter(year >= 2013) %>%
+  group_by(year) %>%
+  summarise(
+    country_count = n_distinct(`Country name`),
+    .groups = 'drop'
+  ) %>%
+  arrange(year)
+
+# 가로 막대 그래프 생성
+happiness_oecd %>%
+  filter(year >= 2013) %>%
+  group_by(year) %>%
+  summarise(
+    country_count = n_distinct(`Country name`),
+    .groups = 'drop'
+  ) %>%
+  ggplot(aes(x = year, y = country_count)) +
+  geom_col(fill = "#233bd5d6") +
+  coord_flip() +
+  theme_minimal(base_family='NanumGothic') +
+  labs(title = "연도별 OECD 국가 데이터 수",
+       x = "연도",
+       y = "국가 수") +
+  geom_text(aes(label = country_count), hjust = -0.2) +
+  scale_y_continuous(limits = c(0, 40))  # y축 범위 설정
+
+# 연도별 누락된 국가 확인
+missing_countries <- happiness_oecd %>%
+  filter(year >= 2013) %>%
+  group_by(year) %>%
+  summarise(
+    missing_countries = paste(setdiff(oecd_countries, `Country name`), collapse = ", "),
+    missing_count = length(setdiff(oecd_countries, `Country name`)),
+    .groups = 'drop'
+  ) %>%
+  arrange(year)
+
+# 결과 출력
+print("연도별 누락된 국가 목록:")
+print(missing_countries) # 38 * 11중 7개 누락, 13년 2개국 누락
+
+# happiness_oecd 데이터를 CSV 파일로 저장
+write.csv(happiness_oecd, "happiness_oecd_2013_2023.csv", row.names = FALSE)
+
+
+# ==============================================================================
+# 3. 데이터 추가
+# ==============================================================================
