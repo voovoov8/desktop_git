@@ -1,6 +1,7 @@
 # ==============================================================================
 # 패키지 로드
 # ==============================================================================
+install.packages("readr")
 library(readr)
 library(dplyr)
 
@@ -220,6 +221,7 @@ happiness_housing <- happiness_oecd_with_code %>%
     by = c("Country name" = "country", "year" = "year")
   )
 View(happiness_housing)
+data_oecd <- read.csv("happiness_oecd_with_code.csv")
 
 ##############################################################
 pti_ratio <- read_csv("/Users/yunchaeho/Desktop/exer/DB_PJ_stata/Price_to_income_ratio.csv")
@@ -250,6 +252,27 @@ View(happiness_h_p)
 ptr_ratio <- read_csv("/Users/yunchaeho/Desktop/exer/DB_PJ_stata/Price_to_rent_ratio.csv")
 r_house_price <- read_csv("/Users/yunchaeho/Desktop/exer/DB_PJ_stata/Real_house_price_indices.csv")
 Rent_price <- read_csv("/Users/yunchaeho/Desktop/exer/DB_PJ_stata/Rent_price.csv")
+str(Rent_price)
+# Rename countries
+# nominal_hp 데이터프레임 국가명 변경
+nominal_hp$Country.name <- ifelse(nominal_hp$Country.name == "Slovak Republic", "Slovakia", nominal_hp$Country.name)
+nominal_hp$Country.name <- ifelse(nominal_hp$Country.name == "Korea", "South Korea", nominal_hp$Country.name)
+
+# pti_ratio 데이터프레임 국가명 변경
+pti_ratio$Country.name <- ifelse(pti_ratio$Country.name == "Slovak Republic", "Slovakia", pti_ratio$Country.name)
+pti_ratio$Country.name <- ifelse(pti_ratio$Country.name == "Korea", "South Korea", pti_ratio$Country.name)
+
+# ptr_ratio 데이터프레임 국가명 변경
+ptr_ratio$Country.name <- ifelse(ptr_ratio$Country.name == "Slovak Republic", "Slovakia", ptr_ratio$Country.name)
+ptr_ratio$Country.name <- ifelse(ptr_ratio$Country.name == "Korea", "South Korea", ptr_ratio$Country.name)
+
+# r_house_price 데이터프레임 국가명 변경
+r_house_price$Country.name <- ifelse(r_house_price$Country.name == "Slovak Republic", "Slovakia", r_house_price$Country.name)
+r_house_price$Country.name <- ifelse(r_house_price$Country.name == "Korea", "South Korea", r_house_price$Country.name)
+
+# Rent_price 데이터프레임 국가명 변경
+Rent_price$Country.name <- ifelse(Rent_price$Country.name == "Slovak Republic", "Slovakia", Rent_price$Country.name)
+Rent_price$Country.name <- ifelse(Rent_price$Country.name == "Korea", "South Korea", Rent_price$Country.name)
 
 ################################################################
 # ptr 추가 
@@ -323,3 +346,5 @@ str(happiness_housing_add)
 
 # 저장 
 write.csv(happiness_housing_add, "happiness_housing_add.csv", row.names = FALSE)
+
+

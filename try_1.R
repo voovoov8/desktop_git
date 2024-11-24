@@ -1,4 +1,4 @@
-#  데이터 로드
+#  1. 데이터 로드 =======
 data <- read.csv("happiness_housing_add.csv")
 str(data)
 View(data)
@@ -8,6 +8,34 @@ install.packages(c("plm", "lmtest", "sandwich"))
 library(plm)
 library(lmtest)
 library(sandwich)
+library(dplyr)
+
+
+
+
+
+# 2. 데이터 기간 설정 ========
+data_2012_2023 <- subset(data, year >= 2012)
+data_2012_2023 <- data %>% filter(year >= 2012)
+summary(data_2012_2023$year)
+View(data_2012_2023)
+str(data_2012_2023)
+
+## 머징 안된 나라들 확인
+# NA가 있는 국가 확인 (house_price)
+countries_na_house <- unique(data_2012_2023$Country.name[is.na(data_2012_2023$house_price)])
+
+# NA가 있는 국가 확인 (ptr_ratio)
+countries_na_ptr <- unique(data_2012_2023$Country.name[is.na(data_2012_2023$ptr_ratio)])
+
+# 결과 출력
+print("Countries with NA in house_price:")
+print(countries_na_house)
+
+print("Countries with NA in ptr_ratio:")
+print(countries_na_ptr)
+
+
 
 # 패널 데이터 설정
 pdata <- pdata.frame(data, index = c("Country.name", "year"))
@@ -78,5 +106,4 @@ create_scatter_plot <- function(x_variable) {
 
 str(data)
 create_scatter_plot("house_price")
-
 
