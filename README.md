@@ -13,7 +13,7 @@
   4. Real_house_price_indices     (colname = r_house_price)
   5. Rent_price                   (colname = Rent_price)
 
-# v 13 
+# v 15
 1. data_2012_2023 데이터 추가 
 -> 2012~2023로 시간제한을 둔 데이터 추가
 -> 추가적으로 활용한 독립변수 및 통제변수만 추가하면 됨 
