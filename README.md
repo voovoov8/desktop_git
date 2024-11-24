@@ -12,3 +12,5 @@
   3. Price_to_rent_ratio          (colname = ptr_ratio)
   4. Real_house_price_indices     (colname = r_house_price)
   5. Rent_price                   (colname = Rent_price)
+
+# v 13 
