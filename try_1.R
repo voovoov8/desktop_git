@@ -43,3 +43,40 @@ plot <- plot_ly(data,
                yaxis = list(title = "Life Ladder Score"))
 
 plot
+
+plot <- plot_ly(data,
+                x = ~house_price,
+                y = ~Life.Ladder,
+                type = 'scatter',
+                mode = 'markers',
+                marker = list(size = 8),
+                text = ~paste("Country:", Country.name)) %>%
+        layout(title = "House Price vs Life Ladder Score",
+               xaxis = list(title = "House Price", range = c(0, 400)),
+               yaxis = list(title = "Life Ladder Score"))
+
+plot
+
+
+
+
+# life ladder score 의 산점도 함수 정의
+create_scatter_plot <- function(x_variable) {
+  plot <- plot_ly(data,
+                  x = as.formula(paste0("~", x_variable)),
+                  y = ~Life.Ladder,
+                  type = 'scatter',
+                  mode = 'markers',
+                  marker = list(size = 8),
+                  text = ~paste("Country:", Country.name)) %>%
+          layout(title = paste(x_variable, "vs Life Ladder Score"),
+                xaxis = list(title = x_variable),
+                yaxis = list(title = "Life Ladder Score"))
+  return(plot)
+}
+
+
+str(data)
+create_scatter_plot("house_price")
+
+
