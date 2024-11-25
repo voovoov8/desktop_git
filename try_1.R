@@ -21,6 +21,9 @@ summary(data_2012_2023$year)
 View(data_2012_2023)
 str(data_2012_2023)
 
+write.csv(data_2012_2023, "data_2012_2023.csv", row.names = FALSE)
+
+
 ## 머징 안된 나라들 확인
 # NA가 있는 국가 확인 (house_price)
 countries_na_house <- unique(data_2012_2023$Country.name[is.na(data_2012_2023$house_price)])
