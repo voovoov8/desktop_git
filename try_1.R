@@ -21,9 +21,6 @@ summary(data_2012_2023$year)
 View(data_2012_2023)
 str(data_2012_2023)
 
-write.csv(data_2012_2023, "data_2012_2023.csv", row.names = FALSE)
-
-
 ## 머징 안된 나라들 확인
 # NA가 있는 국가 확인 (house_price)
 countries_na_house <- unique(data_2012_2023$Country.name[is.na(data_2012_2023$house_price)])
@@ -41,7 +38,7 @@ print(countries_na_ptr)
 
 
 # 패널 데이터 설정
-pdata <- pdata.frame(data, index = c("Country.name", "year"))
+pdata <- pdata.frame(data_2012_2023, index = c("Country.name", "year"))
 View(pdata)
 
 # 패널 OLS 모델 추정
@@ -93,7 +90,7 @@ plot
 
 # life ladder score 의 산점도 함수 정의
 create_scatter_plot <- function(x_variable) {
-  plot <- plot_ly(data,
+  plot <- plot_ly(data_2012_2023,
                   x = as.formula(paste0("~", x_variable)),
                   y = ~Life.Ladder,
                   type = 'scatter',
@@ -107,6 +104,7 @@ create_scatter_plot <- function(x_variable) {
 }
 
 
-str(data)
-create_scatter_plot("house_price")
+str(data_2012_2023)
+create_scatter_plot("ptr_ratio")
+names(data_2012_2023)
 
