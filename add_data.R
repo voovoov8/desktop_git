@@ -65,3 +65,6 @@ final_data <- final_data %>%
 str(final_data)
 
 write.csv(final_data, "ing_2012_2023.csv", row.names = FALSE)
+
+
+
