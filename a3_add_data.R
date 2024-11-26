@@ -10,7 +10,7 @@ library()
 # 데이터 불러오기
 employ_data <- read.csv("oecd_employ_or.csv")
 gini_data <- read.csv("oecd_gini_or.csv") 
-lifeex_data <- read.csv("oecd_lifeex_or.csv")
+lifeex_data <- read.csv("oecd_lifeex_or3.csv")
 social_data <- read.csv("oecd_social_expenditure_pnm_or.csv")
 main_data <- read.csv("data_2012_2023.csv")
 
