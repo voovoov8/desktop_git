@@ -37,6 +37,8 @@ print(countries_na_ptr)
 
 
 
+
+# 3. 데이터 전처리 ========
 # 패널 데이터 설정
 pdata <- pdata.frame(data_2012_2023, index = c("Country.name", "year"))
 View(pdata)
@@ -57,6 +59,9 @@ coeftest(panel_model, vcov = vcovHC(panel_model, type = "HC1"))
 
 
 
+
+
+# 4. 데이터 시각화 ========
 library(plotly)
 
 plot <- plot_ly(data, 
