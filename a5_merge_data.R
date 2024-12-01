@@ -66,3 +66,20 @@ long_data_filtered$Ownership[long_data_filtered$Ownership == 0] <- NA
 View(long_data_filtered)
 
 write.csv(long_data_filtered, "Ownership_clean.csv", row.names = FALSE)
+
+
+
+
+data <- read.csv("Ownership_clean.csv")
+
+# Count total number of NA values
+na_count <- sum(is.na(data$Ownership))
+
+# Get rows with NA values showing Country and Year
+na_rows <- data[is.na(data$Ownership), c("Country", "Year")]
+
+# Display results
+print(paste("Total number of NA values:", na_count))
+print("Countries and Years with NA values:")
+print(na_rows)
+str(data)
