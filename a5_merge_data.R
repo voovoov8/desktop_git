@@ -177,3 +177,40 @@ print(missing_rows)
 
 # 보간 시도 ----
 write.csv(merged_data, "final_data.csv", row.names = FALSE)
+
+
+
+
+# 데이터 확인 ----
+data   <-  read.csv("final_data.csv")
+str(data)
+
+
+colnames(data)
+# 필요한 패키지 로드
+library(dplyr)
+
+# 결측값 개수 세기
+missing_values <- data %>%
+  summarise(
+    lifeladder = sum(is.na(Life.Ladder)),
+    house_price = sum(is.na(house_price)),
+    loggdppercapita = sum(is.na(Log.GDP.per.capita)),
+    gini = sum(is.na(gini)),
+    employment_rate = sum(is.na(employment_rate)),
+    socialsupport = sum(is.na(Social.support)),
+    social_expenditure = sum(is.na(social_expenditure)),
+    freedomtomakelifechoices = sum(is.na(Freedom.to.make.life.choices)),
+    housing_expenditure_ratio = sum(is.na(housing_expenditure_ratio)),
+    ownership = sum(is.na(Ownership))
+  )
+
+# 결과 출력
+View(missing_values)
+
+# 결측치가 있는 행 필터링
+na_rows <- data[is.na(data$Social.support) | is.na(data$gini) | is.na(data$Ownership), c("Country.name", "Year", "Social.support", "gini", "Ownership")]
+
+# 결과 출력
+print(na_rows)
+
