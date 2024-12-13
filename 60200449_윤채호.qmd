@@ -1,0 +1,358 @@
+---
+title: "60200449_윤채호"
+author: "yoon"
+format: html
+editor: visual
+---
+
+# 경제 빅데이터 분석 기말시험
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(AER)
+library(stargazer)
+library(readr)
+library(tidyr)
+library(tidyverse)
+```
+
+## 1. 다음의 질문을 읽고 적절한 qmd 스크립트를 작성하시오
+
+### 1-A. auto.csv파일을 읽고 기본구조를 확인하시오.
+
+```{r}
+# 불러오는 과정 
+library(readr) 
+auto_data <- read.delim("auto.csv", sep="|") # 데이터가 , 가 아닌 |로 구분된 데이터임. 
+
+# 데이터 기본구조 확인하기 
+summary(auto_data)
+str(auto_data)
+# View(auto_data)
+```
+
+### 1-B. 결측치가 있는 변수들을 찾고, 각 변수들의 결측치 개수들을 제시하시오.
+
+```{r}
+# 각 컬럼의 결측치 확인 
+missing_counts <- colSums(is.na(auto_data))
+
+# 결측치가 있는 컬럼과 그 개수
+missing_cols <- missing_counts[missing_counts > 0]
+print(missing_cols)
+
+
+```
+
+-\> 결과적으로 rep78 이라는 변수에서 5개의 결측값이 있다.
+
+### 1-C. Weight와 length를 이용하여 새로운 변수 density를 만드시오.
+
+( density= weight/ length)
+
+```{r}
+auto_data$density <- auto_data$weight / auto_data$length # 새로운 변수 정의
+```
+
+### 1-D. dplyr 를 이용해서 mpg\>=30 인 경우 "high" , mpg \>=20 인 경우 "medium", 나머지의 경우에는 "low" 의 값을 갖는 fuel_efficiency 변수를 만드시오.
+
+```{r}
+library(dplyr)
+auto_data <- auto_data %>%
+  mutate(fuel_efficiency = case_when(
+    mpg >= 30 ~ "high",
+    mpg >= 20 ~ "medium",
+    TRUE ~ "low"
+  ))
+# 테이블로 결과 확인. 
+table(auto_data$fuel_efficiency)
+```
+
+### 1-E. fuel_efficiency 의 값에 따라서 다른 color를 갖는 mpg (x축), price(y축) 의 산포도와 추세선을 그리시오.
+
+```{r}
+library(ggplot2)
+
+# 3개의 추세선을 그리는 경우
+ggplot(auto_data, aes(x = mpg, y = price, color = fuel_efficiency)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_color_manual(values = c("high" = "green", "medium" = "blue", "low" = "red")) +
+  labs(title = "MPG vs Price by Fuel Efficiency",
+       x = "Miles Per Gallon",
+       y = "Price",
+       color = "Fuel Efficiency") +
+  theme_minimal()
+```
+
+```{r}
+# 1개의 추세선으로 보는 경우. 
+ggplot(auto_data, aes(x = mpg, y = price)) +
+  geom_point(aes(color = fuel_efficiency)) +
+  geom_smooth(method = "lm", color = "black") +
+  scale_color_manual(values = c("high" = "green", "medium" = "blue", "low" = "red")) +
+  labs(title = "MPG vs Price by Fuel Efficiency",
+       x = "Miles Per Gallon",
+       y = "Price",
+       color = "Fuel Efficiency") +
+  theme_minimal()
+```
+
+## 2. labor_supply. csv 데이터셋을 읽고 다음 문제에 답하기 위한 qmd 스크립트를 작성하시오.
+
+### 2-A. 로그 임금 ln_wage_hourly 의 히스토그램과 확률밀도함수를 겹쳐 시각화 하시오.
+
+```{r}
+# 파일 불러오기
+labor_supply <- read.delim("labor_supply.csv", sep=",")
+# View(labor_supply)
+summary(labor_supply)
+str(labor_supply)
+```
+
+```{r}
+library(ggplot2)
+# 겹쳐서 시각화
+ggplot(labor_supply, aes(x = ln_wage_hourly)) +
+  geom_histogram(aes(y = ..density..), 
+                fill = "lightblue", 
+                alpha = 0.7,
+                color = "white") +
+  geom_density(color = "darkblue", 
+               linewidth = 1) +
+  labs(title = "Distribution of Log Hourly Wage",
+       x = "Log Hourly Wage",
+       y = "Density") +
+  theme_minimal()
+
+
+```
+
+### 2-B. 학력변수 "w2edu" 를 무학, 초졸, 중졸, 고졸, 전문대졸, 4년제대졸, 석사, 박사로 구분하는 factor 변수로 전환하시오.
+
+```{r}
+str(labor_supply)
+
+# w2edu를 factor로 변환
+labor_supply$w2edu <- factor(labor_supply$w2edu, levels = 1:8, 
+                   labels = c("No_Education", "Elementary", "Middle_School", "High_School", "Junior_College", "Bachelor", "Master", "Doctor"))
+
+# 더미 변수 생성
+dummy_vars <- model.matrix(~ w2edu - 1, data = labor_supply)
+
+# 더미 변수를 데이터 프레임에 추가
+labor_supply <- cbind(labor_supply, dummy_vars)
+
+
+# 결과 확인
+head(labor_supply)
+```
+
+### 2-C. 연령 age와 로그-임금 ln_wage_hourly의 산포도를 w2edu에 따라 다른 색으로 표시하고, 연령과 로그-임금 간의 관계가 선형인지 비선형인지 설명해보시오.
+
+```{r}
+# 산포도 생성
+ggplot(data = labor_supply, aes(x = age, y = ln_wage_hourly, color = w2edu)) +
+  geom_point(alpha = 0.7) +  # 점 추가 및 투명도 설정
+  scale_color_viridis_d() +  # 색상 팔레트 설정
+  labs(title = "Scatter Plot of Age vs. Log Hourly Wage by Education Level",
+       x = "Age",
+       y = "Log Hourly Wage (ln_wage_hourly)",
+       color = "Education Level") +
+  theme_minimal() +          # 그래프 스타일 설정
+  theme(legend.position = "right")  # 범례 위치 조정
+```
+
+-\> 역 U자형인 비선형 구조로 보인다. 20대부터 40대 정도 까지는 연령의 증가에 따른 로드_임금이 증가세를 보이다가, 그 이후부터는 연령 증가에 따라 하락세를 보이는 것으로 보인다. 생애소득에서 정년퇴직 시기 이후에 소득이 줄어든다는 일반적인 상식과 부합하는 데이터라고 생각한다.\
+-\> 다만, 추가로 고려해야 할 점은, 50\~60 대 이상 즉 고연령 노동자들의 교육수준이 매우 낮은 것으로 보이는데, 이는 세대 변화에 따른 사회 전반의 교육수준이나 인프라의 변화에 따라 저연령자들이 보다 많은 교육의 기회를 제공받은 것으로 보인다. 따라서 연령과 로그-임금의 관계를 분석함에 있어, 교육수준의 정도가 통제되어야 할 필요성이 있다고 판단된다.
+
+### 2-D. 회귀분석을 통해 교육수익률을 추정하고 추정치를 해석해보시오
+
+-   교육수익률, 즉 교육 투입에 따른 임금(수익)을 추정하고자 한다.
+
+-   " 수익률 = 이익/ 투자비용 " 이라고 고려했을때 투자비용인 교육수준 분에 이익, 즉 임금을 확인하고자 한다.
+
+-   이때, 교육수준을 나타내는 데이터는 2개, 교육수준더미와 교육년수이다. 그러나 교육수준과 교육년수가 아래와 같은 규칙을 가진다. 즉 교육 수준이 교육 년수에 반영되는 것으로 가정하였다.
+
+    | **w2edu** | **educ_year** | **의미** |
+    |-----------|---------------|----------|
+    | 1         | 0             | 무학     |
+    | 2         | 6             | 초등학교 |
+    | 3         | 9             | 중학교   |
+    | 4         | 12            | 고등학교 |
+    | 5         | 14            | 전문대학 |
+    | 6         | 16            | 대학교   |
+    | 7         | 18            | 석사     |
+    | 8         | 20            | 박사     |
+
+-   따라서 연속형 변수인 교육연수를 활용하여 '교육수익률' 이라는 개념에 적합한 추정결과를 추정한다. 즉, ols 추정결과 해당 변수의 계수는 "교육년수 1년 증가 당 \~" 으로 해석될 것이다.
+
+-   ln 교육년수 컬럼을 추가하는 방안도 고려해 보았으나, 교육년수에 0의 값이 있어 로그 처리가 되지 않으며, 1을 더한 다음 로그 처리를 하는 방법 역시 외곡이 있을 수 있다고 판단되어 하지 않았다.
+
+-   한편, 종속변수인 ln_시간당 임금 변수를 활용하였다.
+
+-   해당 변수가 종속변수가 되었을때 독립변수 한 단위 증가가 시간당 임금의 '상대적 변화(%)' 를 의미하기 때문에, 결론적으로 교육년수 1년당 시간당 임금 증가율(%) 로 이해할 수 있기 때문이다.
+
+-   또한 종속변수인 ln시간당 임금에 영향을 줄 수 있는 다른 통제변수로 노동자의 나이를 추가로 고려하였다.
+
+```{r}
+library(AER)
+library(stargazer)
+# 회귀분석 
+reg_model <- lm(ln_wage_hourly ~ educ_year + age, data = labor_supply)
+
+# 결과 출력
+summary(reg_model)
+
+# stargazer를 통한 결과 출력
+stargazer(reg_model, type = "text",
+          title = "교육년수와 나이가 시간당 임금(로그)에 미치는 영향",
+          covariate.labels = c("교육년수", "나이", "상수항"),
+          dep.var.labels = "ln(시간당 임금)")
+```
+
+-   결과적으로 위의 추정결과에 따르면 " 교육년수가 1년 증가할 때마다 시간당 임금이 약 12.8% 증가한다 " 는 점을 유의수준 1%에서 유의하게 확인할 수 있다. 따라서 **교육 1년당 교육수익률은 12.8%라고 볼 수 있다.**
+
+-   한편, 통제변수로 활용한 나이 변수 역시 " 나이가 1살 증가할 때마다 시간당 임금이 약 0.7% 증가한다 " 는 점도 1% 유의수준에서 통계적 유의성을 보였다.
+
+## 3. titanic 라이브러리를 이용하여 다음 문제에 답을 할 수 있는 qmd 스크립트를 작성하시오.
+
+### 3-A. titanic 패키지의 데이터를 불러들이시오.
+
+```{r}
+library(titanic)
+titanic <- titanic::titanic_train
+str(titanic)
+```
+
+### 3-B. Age 의 결측치를 Pclass별 평균 나이로, Embarked의 결측치를 최빈값(mode)로 대체하시오.
+
+```{r}
+# Pclass별 평균 나이 계산하여 Age 결측치 대체
+titanic$Age <- ave(titanic$Age, titanic$Pclass, 
+                   FUN = function(x) ifelse(is.na(x), 
+                   mean(x, na.rm = TRUE), x))
+
+# Embarked의 최빈값 찾기
+embarked_mode <- names(sort(table(titanic$Embarked), decreasing = TRUE))[1]
+
+# Embarked 결측치를 최빈값으로 대체
+titanic$Embarked[is.na(titanic$Embarked)] <- embarked_mode
+str(titanic)
+# View(titanic)
+```
+
+### 3-C. 훈련 데이터와 테스트 데이터 7:3으로 구분하고, 훈련데이터를 사용하여 생존예측모형을 추정하고, 테스트 데이터를 이용해서 예측확률을 구하시오.
+
+```{r}
+
+# 필요한 라이브러리 로드
+library(caret)
+library(dplyr)
+
+# 데이터 준비
+titanic <- titanic::titanic_train
+titanic <- titanic[, -c(1, 4, 9, 11)]  # 불필요한 열 제거
+
+# 전처리
+titanic$Survived <- factor(titanic$Survived, levels = c(0, 1), labels = c("died", "survived"))
+titanic$Age[is.na(titanic$Age)] <- median(titanic$Age, na.rm = TRUE)
+titanic$Embarked[is.na(titanic$Embarked)] <- "S"
+
+# 데이터 분할 (7:3)
+set.seed(123)
+train_index <- createDataPartition(titanic$Survived, p = 0.7, list = FALSE)
+train_data <- titanic[train_index, ]
+test_data <- titanic[-train_index, ]
+
+# 모델 훈련
+model <- glm(Survived ~ ., data = train_data, family = "binomial")
+
+# 테스트 데이터로 예측
+pred_probs <- predict(model, newdata = test_data, type = "response")
+
+# 예측 확률 확인
+head(pred_probs)
+
+```
+
+### 3-D. 0.1부터 0.9까지 0.05 간격으로 경계값의 수열을 만들고, 각 경계값을 변경해가며, 생존 여부를 구분하고, 각각의 precision를 계산하시오.
+
+```{r}
+# 경계값 수열 생성
+thresholds <- seq(0.1, 0.9, by = 0.05)
+
+# precision 계산 함수
+calculate_precision <- function(actual, predicted) {
+  confusion_mat <- table(Predicted = predicted, Actual = actual)
+  tp <- confusion_mat["survived", "survived"]
+  fp <- confusion_mat["survived", "died"]
+  precision <- tp / (tp + fp)
+  return(precision)
+}
+
+# 각 경계값에 대한 precision 계산
+precision_results <- sapply(thresholds, function(threshold) {
+  predictions <- ifelse(pred_probs > threshold, "survived", "died")
+  precision <- calculate_precision(test_data$Survived, predictions)
+  return(c(threshold = threshold, precision = precision))
+})
+
+# 결과를 데이터 프레임으로 변환
+precision_df <- as.data.frame(t(precision_results))
+colnames(precision_df) <- c("Threshold", "Precision")
+
+# 결과 출력
+print(precision_df)
+```
+
+```{r}
+# 시각화
+library(ggplot2)
+
+ggplot(precision_df, aes(x = Threshold, y = Precision)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Precision vs Threshold",
+       x = "Threshold",
+       y = "Precision") +
+  theme_minimal()
+```
+
+### 3-E. 위의 계산된 precision를 이용해서 x 축은 경계값, y 축은precision인 선그래프를 시각화 하고, precision이 가장 큰 값을 갖는 경계값을 찾으시오.
+
+```{r}
+# 최대 precision을 가진 경계값 찾기
+best_threshold <- precision_df[which.max(precision_df$Precision), ]
+print(paste("최적 경계값:", round(best_threshold$Threshold, 2)))
+print(paste("최대 Precision:", round(best_threshold$Precision, 3)))
+
+```
+
+### 3-F. E에서 구한 경계값에서 accuracy, precision, recall 의 metric을 시각화 하시오.
+
+```{r}
+# 최적 경계값(0.9)에서의 예측값 생성
+predictions_optimal <- ifelse(pred_probs > 0.9, "survived", "died")
+predictions_optimal <- factor(predictions_optimal, levels = c("died", "survived"))
+
+# 혼동 행렬 생성
+conf_matrix <- table(Predicted = predictions_optimal, Actual = test_data$Survived)
+
+# 혼동 행렬을 데이터프레임으로 변환
+conf_df <- as.data.frame(as.table(conf_matrix))
+names(conf_df) <- c("Predicted", "Actual", "Count")
+
+# ggplot을 사용한 혼동 행렬 시각화
+ggplot(conf_df, aes(x = Actual, y = Predicted, fill = Count)) +
+  geom_tile() +
+  geom_text(aes(label = Count), color = "black", size = 5) +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(title = "Confusion Matrix (Threshold = 0.9)",
+       x = "Actual",
+       y = "Predicted") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+```

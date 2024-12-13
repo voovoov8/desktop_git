@@ -13,7 +13,6 @@ library(dplyr)
 
 
 
-
 # 2. 데이터 기간 설정 ========
 data_2012_2023 <- subset(data, year >= 2012)
 data_2012_2023 <- data %>% filter(year >= 2012)
